@@ -1,0 +1,35 @@
+.empty {
+  text-align: center;
+  padding: var(--spacing-3xl) var(--spacing-xl);
+}
+
+.empty .art {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-color);
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+  margin: 0 auto var(--spacing-lg);
+  border: 1px solid var(--border-color);
+}
+
+.empty .art svg {
+  width: 30px;
+  height: 30px;
+}
+
+.empty h4 {
+  margin: 0 0 6px;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.empty p {
+  margin: 0 auto var(--spacing-lg);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  max-width: 38ch;
+}
