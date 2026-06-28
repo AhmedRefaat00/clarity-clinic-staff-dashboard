@@ -1,0 +1,274 @@
+.patients-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.page-head h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.page-head p {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* Button Styling (Following Teammate's Staff Buttons) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--text-on-primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  border-color: var(--border-hover);
+  background-color: var(--bg-color);
+}
+
+/* Forms & Panels */
+.panel {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+  align-items: flex-end;
+}
+
+@media (max-width: 992px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.label .opt {
+  color: var(--text-muted);
+  font-weight: var(--font-weight-regular);
+}
+
+.input {
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 13px;
+  width: 100%;
+  transition: all var(--transition-fast);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 139, 116, 0.15);
+}
+
+.inline-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* Search bar / toolbar */
+.toolbar {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.search-field {
+  flex-grow: 1;
+  max-width: 400px;
+}
+
+.input-icon {
+  position: relative;
+  width: 100%;
+}
+
+.input-icon .input {
+  padding-left: 40px;
+}
+
+.input-icon svg {
+  position: absolute;
+  top: 50%;
+  left: 13px;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* Table Wrapper & Table Styles (Identical to Teammate's Staff Table) */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface-color);
+  box-shadow: var(--shadow-sm);
+}
+
+table.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+table.tbl th {
+  padding: 16px 24px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.75px;
+  background-color: #fafdfc;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dark-theme table.tbl th {
+  background-color: #10211e;
+}
+
+table.tbl td {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+table.tbl tr:last-child td {
+  border-bottom: none;
+}
+
+table.tbl tr:hover td {
+  background-color: #fafdfc;
+}
+
+.dark-theme table.tbl tr:hover td {
+  background-color: #10211e;
+}
+
+td.nm {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+/* Badges (Mapped from teammate's badge approach) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: capitalize;
+}
+
+.badge-success {
+  background-color: var(--bg-success-light);
+  color: var(--text-success-dark);
+}
+
+.badge-neutral {
+  background-color: #f1f5f4;
+  color: #708580;
+  border: 1px solid var(--border-color);
+}
+
+.dark-theme .badge-neutral {
+  background-color: #1a302c;
+  color: #8ba39c;
+}
+
+.badge .led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+@media (max-width: 768px) {
+  .page-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-head button {
+    width: 100%;
+  }
+
+  .search-field {
+    max-width: 100%;
+  }
+}

@@ -1,1 +1,103 @@
-<p>services works!</p>
+<div class="services-container">
+  <header class="page-head">
+    <div>
+      <h1>Services</h1>
+      <p>Manage clinic services.</p>
+    </div>
+    <button class="btn btn-primary" (click)="startAdd()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add service
+    </button>
+  </header>
+
+  @if (form(); as data) {
+    <div class="panel form-panel">
+      <form (submit)="save(); $event.preventDefault()" class="form-grid">
+        <div class="field">
+          <label class="label">Name</label>
+          <input required class="input" name="name" [(ngModel)]="data.name" placeholder="Service Name">
+        </div>
+        <div class="field">
+          <label class="label">Duration (minutes)</label>
+          <input type="number" min="5" step="5" required class="input" name="duration" [(ngModel)]="data.durationMinutes">
+        </div>
+        <div class="field">
+          <label class="label">Price (EGP)</label>
+          <input type="number" min="0" required class="input" name="price" [(ngModel)]="data.price">
+        </div>
+        <div class="field">
+          <label class="label">Doctor</label>
+          <div class="select-wrap">
+            <select class="select" name="doctorId" [(ngModel)]="data.doctorId" [disabled]="data.id !== null">
+              @for (doc of doctorsList(); track doc.id) {
+                <option [value]="doc.id">{{ doc.displayName }}</option>
+              }
+            </select>
+            <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+        <div class="field inline-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="!data.name || saving()">
+            Save
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  @if (loading()) {
+    <app-skeleton-rows></app-skeleton-rows>
+  } @else {
+    @if (servicesList().length === 0) {
+      <app-empty icon="clipboard" title="No services configured" message="Create services to configure pricing and durations."></app-empty>
+    } @else {
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Doctor</th>
+              <th>Duration</th>
+              <th>Price</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (service of servicesList(); track service.id) {
+              <tr>
+                <td class="nm">{{ service.name }}</td>
+                <td>{{ service.doctorName }}</td>
+                <td>{{ service.durationMinutes }} mins</td>
+                <td class="num">{{ service.price }} EGP</td>
+                <td>
+                  <div class="row-actions">
+                    <button class="icon-btn" aria-label="edit" (click)="startEdit(service)">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"></path>
+                      </svg>
+                    </button>
+                    <button class="icon-btn danger" aria-label="delete" (click)="remove(service.id)">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

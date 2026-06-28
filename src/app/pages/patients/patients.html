@@ -1,1 +1,87 @@
-<p>patients works!</p>
+<div class="patients-container">
+  <header class="page-head">
+    <div>
+      <h1>Patients</h1>
+      <p>Register and search patients.</p>
+    </div>
+    <button class="btn btn-primary" (click)="toggleAdd()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      {{ adding() ? 'Cancel' : 'Add patient' }}
+    </button>
+  </header>
+
+  @if (adding()) {
+    <div class="panel form-panel">
+      <form (submit)="onSubmit(); $event.preventDefault()" class="form-grid">
+        <div class="field">
+          <label class="label">Name</label>
+          <input required class="input" name="name" [(ngModel)]="newName" placeholder="Full Name">
+        </div>
+        <div class="field">
+          <label class="label">Phone</label>
+          <input required class="input" name="phone" [(ngModel)]="newPhone" placeholder="Phone Number">
+        </div>
+        <div class="field">
+          <label class="label">Email <span class="opt">(Optional)</span></label>
+          <input type="email" class="input" name="email" [(ngModel)]="newEmail" placeholder="Email Address">
+        </div>
+        <div class="field inline-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="!newName || !newPhone">
+            Create
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <div class="toolbar">
+    <div class="field search-field">
+      <div class="input-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input class="input" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" placeholder="Search patients...">
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <app-skeleton-rows></app-skeleton-rows>
+  } @else {
+    @if (filteredPatients().length === 0) {
+      <app-empty icon="user" title="No patients found" message="Try searching for a different name or phone number."></app-empty>
+    } @else {
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Login</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (patient of filteredPatients(); track patient.id) {
+              <tr>
+                <td class="nm">{{ patient.name }}</td>
+                <td>{{ patient.phone }}</td>
+                <td>{{ patient.email || '—' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="patient.hasLogin ? 'badge-success' : 'badge-neutral'">
+                    <span class="led"></span>
+                    {{ patient.hasLogin ? 'Registered' : 'Walk-in only' }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

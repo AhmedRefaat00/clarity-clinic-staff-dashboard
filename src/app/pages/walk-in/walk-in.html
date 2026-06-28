@@ -1,1 +1,155 @@
-<p>walk-in works!</p>
+<div class="walkin-container">
+  <header class="page-head">
+    <div>
+      <h1>Walk-in</h1>
+      <p>Immediate booking for walk-in patients.</p>
+    </div>
+  </header>
+
+  <div class="grid grid-2">
+    <!-- Patient selection panel -->
+    <div class="panel">
+      <div class="tabs">
+        <button class="tab-btn" [class.active]="patientMode() === 'existing'" (click)="patientMode.set('existing')">
+          Existing Patient
+        </button>
+        <button class="tab-btn" [class.active]="patientMode() === 'new'" (click)="patientMode.set('new')">
+          New Patient
+        </button>
+      </div>
+
+      @if (patientMode() === 'existing') {
+        <div class="col" style="gap: 14px;">
+          <div class="field">
+            <label class="label">Search Patient</label>
+            <div class="input-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input class="input" [value]="patientSearch()" (input)="patientSearch.set($any($event.target).value)" placeholder="Type to search name or phone...">
+            </div>
+          </div>
+          
+          <div class="col patient-list" style="gap: 8px; max-height: 250px; overflow-y: auto;">
+            @for (pat of filteredPatients(); track pat.id) {
+              <button class="pick" [class.sel]="selectedPatientId() === pat.id" (click)="selectedPatientId.set(pat.id)">
+                <div class="pick-name">{{ pat.name }}</div>
+                <div class="pick-sub">{{ pat.phone }}</div>
+              </button>
+            } @empty {
+              <p class="muted" style="text-align: center; padding: 12px 0;">No patients found.</p>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="col" style="gap: 14px;">
+          <div class="field">
+            <label class="label">Name</label>
+            <input required class="input" name="npName" [(ngModel)]="npName" placeholder="Full Name">
+          </div>
+          <div class="field">
+            <label class="label">Phone</label>
+            <input required class="input" name="npPhone" [(ngModel)]="npPhone" placeholder="Phone Number">
+          </div>
+          <div class="field">
+            <label class="label">Email <span class="opt">(Optional)</span></label>
+            <input type="email" class="input" name="npEmail" [(ngModel)]="npEmail" placeholder="Email Address">
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Booking details panel -->
+    <div class="panel">
+      <div class="field">
+        <label class="label">Doctor</label>
+        <div class="select-wrap">
+          <select class="select" [value]="doctorId()" (change)="doctorId.set($any($event.target).value); onDoctorChange()">
+            <option value="">— Select Doctor —</option>
+            @for (doc of doctors(); track doc.id) {
+              <option [value]="doc.id">{{ doc.name }}</option>
+            }
+          </select>
+          <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top: 14px;">
+        <label class="label">Service</label>
+        <div class="select-wrap">
+          <select class="select" [value]="serviceId() || ''" [disabled]="!doctorId()" (change)="serviceId.set(+$any($event.target).value || null); onServiceChange()">
+            <option value="">— Select Service —</option>
+            @for (srv of services(); track srv.id) {
+              <option [value]="srv.id">{{ srv.name }} ({{ srv.durationMinutes }} mins)</option>
+            }
+          </select>
+          <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top: 14px;">
+        <label class="label">Date</label>
+        <input type="date" class="input" [value]="bookingDate()" [min]="today" (input)="bookingDate.set($any($event.target).value); onDateChange()">
+      </div>
+
+      <div class="subhead" style="margin: 24px 0 12px 0;">
+        <h3 style="font-size: var(--font-size-md);">Times</h3>
+      </div>
+
+      @if (!doctorId() || !serviceId()) {
+        <p class="muted text-center" style="font-size: var(--font-size-sm); text-align: center; padding: 12px 0;">
+          Please select a doctor and service to view times.
+        </p>
+      } @else if (slotsLoading()) {
+        <p class="muted text-center" style="font-size: var(--font-size-sm); text-align: center; padding: 12px 0;">
+          Loading available slots...
+        </p>
+      } @else {
+        <div class="slots">
+          @for (slot of availableSlots; track slot) {
+            <button class="slot" 
+                    [class.is-selected]="selectedSlot() === slot" 
+                    [disabled]="isSlotTaken(slot)" 
+                    (click)="selectSlot(slot)">
+              {{ slot }}
+            </button>
+          }
+        </div>
+      }
+
+      <button class="btn btn-primary btn-block" 
+              [class.is-loading]="booking()" 
+              [disabled]="!canBook() || booking()" 
+              (click)="book()"
+              style="margin-top: 24px;">
+        @if (booking()) {
+          <span class="spinner"></span>
+        } @else {
+          Book appointment
+        }
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Success Toast Banner -->
+@if (showSuccess()) {
+  <div class="toast-stack">
+    <div class="toast ok">
+      <div class="t-ic">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="t-body">
+        <div class="t-title">Success</div>
+        <div class="t-msg">Walk-in appointment booked successfully!</div>
+      </div>
+    </div>
+  </div>
+}

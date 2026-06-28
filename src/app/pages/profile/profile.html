@@ -1,1 +1,77 @@
-<p>profile works!</p>
+<div class="profile-container">
+  <header class="page-head">
+    <div>
+      <h1>Profile</h1>
+      <p>Account preferences.</p>
+    </div>
+  </header>
+
+  <div class="forms-wrapper">
+    <!-- Profile Info Form -->
+    <div class="panel">
+      <form (submit)="saveProfile(); $event.preventDefault()" class="col" style="gap: 16px;">
+        <div class="field">
+          <label class="label">Full Name</label>
+          <input required class="input" name="name" [value]="name()" (input)="name.set($any($event.target).value)" placeholder="Your Name">
+        </div>
+        <div class="field">
+          <label class="label">Email Address</label>
+          <input disabled class="input" name="email" [value]="email()" placeholder="Email Address">
+        </div>
+        <div class="field">
+          <label class="label">Phone Number</label>
+          <input required class="input" name="phone" [value]="phone()" (input)="phone.set($any($event.target).value)" placeholder="Phone Number">
+        </div>
+        <button type="submit" class="btn btn-primary" [disabled]="savingProfile() || !name() || !phone()" [class.is-loading]="savingProfile()">
+          @if (savingProfile()) {
+            <span class="spinner"></span>
+          } @else {
+            Save
+          }
+        </button>
+      </form>
+    </div>
+
+    <!-- Change Password Form -->
+    <div class="subhead" style="margin-top: 32px; margin-bottom: 16px;">
+      <h3 style="font-size: var(--font-size-md); font-weight: var(--font-weight-bold);">Change password</h3>
+    </div>
+
+    <div class="panel">
+      <form (submit)="changePassword(); $event.preventDefault()" class="col" style="gap: 16px;">
+        <div class="field">
+          <label class="label">Current Password</label>
+          <input type="password" required class="input" name="current" [(ngModel)]="currentPassword" placeholder="Current Password">
+        </div>
+        <div class="field">
+          <label class="label">New Password</label>
+          <input type="password" minlength="6" required class="input" name="newPwd" [(ngModel)]="newPassword" placeholder="At least 6 characters">
+        </div>
+        <button type="submit" class="btn btn-secondary" [disabled]="updatingPassword() || !currentPassword || newPassword.length < 6" [class.is-loading]="updatingPassword()">
+          @if (updatingPassword()) {
+            <span class="spinner"></span>
+          } @else {
+            Update
+          }
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Success Toast Banner -->
+@if (showSuccessToast()) {
+  <div class="toast-stack">
+    <div class="toast ok">
+      <div class="t-ic">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="t-body">
+        <div class="t-title">Success</div>
+        <div class="t-msg">{{ successMsg() }}</div>
+      </div>
+    </div>
+  </div>
+}

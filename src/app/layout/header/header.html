@@ -4,13 +4,13 @@
     </div>
     
     <div class="header-right">
-        <button class="header-btn" title="Toggle Dark/Light Mode">
+        <button class="header-btn" title="Toggle Dark/Light Mode" (click)="toggleTheme()">
             <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         </button>
         
-        <button class="header-btn lang-btn" title="Change Language">
+        <button class="header-btn lang-btn" title="Change Language" (click)="toggleLanguage()">
             <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-            <span class="lang-label">ع</span>
+            <span class="lang-label">{{ currentLang() === 'en' ? 'ع' : 'EN' }}</span>
         </button>
         
         <div class="user-section">

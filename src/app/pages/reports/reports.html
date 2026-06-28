@@ -1,1 +1,97 @@
-<p>reports works!</p>
+<div class="reports-page-container">
+  <header class="page-head">
+    <div>
+      <h1>Reports</h1>
+      <p>Clinic metrics and performance analytics.</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="loading-wrapper" style="text-align: center; padding: 48px 0;">
+      <span class="spinner" style="width: 32px; height: 32px;"></span>
+      <p class="muted" style="margin-top: 12px;">Loading clinic metrics...</p>
+    </div>
+  } @else {
+    <div class="grid grid-2">
+      <!-- Appointments by Status -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <span class="ct">Appointments by status</span>
+        </div>
+        <div class="bars">
+          @for (item of appointmentsByStatus(); track item.status) {
+            <div class="b">
+              <span class="bl">{{ item.count }}</span>
+              <div class="col-pillar" [style.height.%]="getPct(item.count, maxStatus())"></div>
+              <span class="bl" style="font-weight: 600;">{{ item.status }}</span>
+            </div>
+          }
+        </div>
+        <div class="row badges-row" style="gap: 8px; flex-wrap: wrap; margin-top: 24px; display: flex;">
+          @for (item of appointmentsByStatus(); track item.status) {
+            <span class="badge badge-neutral">
+              {{ item.status }}: {{ item.count }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <!-- Revenue by Day -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <span class="ct">Revenue by day</span>
+        </div>
+        <div class="bars">
+          @for (item of revenueByDay(); track item.date) {
+            <div class="b">
+              <span class="bl">{{ item.revenue > 0 ? item.revenue + ' EGP' : '0' }}</span>
+              <div class="col-pillar" [style.height.%]="getPct(item.revenue, maxRevenue())"></div>
+              <span class="bl" style="font-weight: 600;">{{ item.date }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Doctor Utilization -->
+      <div class="chart-card">
+        <div class="chart-head" style="display: flex; justify-content: space-between; align-items: baseline;">
+          <span class="ct">Doctor utilization</span>
+          <span class="csub muted">No-show rate: {{ noShowRate * 100 }}%</span>
+        </div>
+        <div class="utilization-list" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+          @for (doc of doctorUtilization(); track doc.doctorName) {
+            <div class="util-row">
+              <div class="who">
+                <div class="avatar">{{ getInitials(doc.doctorName) }}</div>
+                <span class="nm">{{ doc.doctorName }}</span>
+              </div>
+              <div class="track">
+                <div class="fill" [style.width.%]="getPct(doc.completedAppointments, doc.appointments)"></div>
+              </div>
+              <span class="pct">{{ doc.completedAppointments }}/{{ doc.appointments }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Revenue by Service -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <span class="ct">Revenue by service</span>
+        </div>
+        <div class="table-wrap" style="margin-top: 16px;">
+          <table class="tbl">
+            <tbody>
+              @for (item of revenueByService(); track item.serviceName) {
+                <tr>
+                  <td style="font-weight: 600;">{{ item.serviceName }}</td>
+                  <td class="num" style="text-align: right;">{{ item.revenue }} EGP</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+</div>
