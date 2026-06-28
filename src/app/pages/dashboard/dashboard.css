@@ -1,0 +1,208 @@
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.dashboard-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+}
+
+.dashboard-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.dashboard-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-xl);
+}
+
+.dashboard-details-row {
+  display: flex;
+  gap: var(--spacing-xl);
+  flex-wrap: wrap;
+}
+
+.details-card {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  flex: 1;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.details-card-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* Appointments by Status Custom Chart styling */
+.bar-chart-container {
+  width: 100%;
+  margin-top: auto;
+}
+
+.bar-chart {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 180px;
+  padding-top: var(--spacing-xl);
+}
+
+.chart-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: var(--spacing-sm);
+}
+
+.bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 120px;
+  width: 100%;
+  position: relative;
+}
+
+.bar-value {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-xs);
+}
+
+.bar-pillar {
+  width: 28px;
+  background-color: var(--primary-color);
+  border-radius: 4px 4px 0 0;
+  transition: height var(--transition-slow);
+}
+
+.bar-pillar:hover {
+  background-color: var(--primary-hover);
+}
+
+.bar-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: nowrap;
+  margin-top: var(--spacing-xs);
+}
+
+/* Doctor Utilization Widget styling */
+.utilization-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.utilization-header .details-card-title {
+  margin-bottom: 0;
+}
+
+.no-show-rate {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.utilization-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  justify-content: center;
+  height: 100%;
+}
+
+.utilization-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.doc-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xs);
+  flex-shrink: 0;
+}
+
+.doc-name {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-medium);
+  flex-shrink: 0;
+  width: 110px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.progress-bar-container {
+  flex: 1;
+  height: 8px;
+  background-color: var(--border-color);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: var(--primary-color);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+.utilization-ratio {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  text-align: right;
+  flex-shrink: 0;
+  width: 45px;
+}
+
+/* Responsive adjustment */
+@media (max-width: 992px) {
+  .dashboard-details-row {
+    flex-direction: column;
+  }
+  
+  .details-card {
+    width: 100%;
+  }
+
+  .bar-label {
+    font-size: 10px;
+  }
+}

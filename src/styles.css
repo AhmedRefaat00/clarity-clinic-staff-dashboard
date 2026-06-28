@@ -207,3 +207,31 @@ a {
   color: inherit;
   transition: color var(--transition-fast);
 }
+
+/* ==========================================================================
+   Global Styling
+   ========================================================================== */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.dashboard-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+}
+
+.dashboard-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.dashboard-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}

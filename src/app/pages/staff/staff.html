@@ -1,1 +1,67 @@
-<p>staff works!</p>
+<div class="staff-container">
+  <header class="staff-header">
+    <div class="header-left">
+      <h1 class="staff-title">Staff</h1>
+      <p class="staff-subtitle">Doctors and receptionists.</p>
+    </div>
+    <div class="staff-actions">
+      <button class="btn-add-receptionist">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Add receptionist
+      </button>
+      <button class="btn-add-doctor">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Add doctor
+      </button>
+    </div>
+  </header>
+
+  <div class="table-responsive">
+    <table class="staff-table">
+      <thead>
+        <tr>
+          <th>NAME</th>
+          <th>ROLE</th>
+          <th>SPECIALTY</th>
+          <th>STAFF.STATUS</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (staff of staffList(); track staff.id) {
+          <tr>
+            <td>
+              <div class="staff-profile-cell">
+                <div class="staff-avatar">
+                  {{ getInitials(staff.name) }}
+                </div>
+                <div class="staff-info">
+                  <span class="staff-name">{{ staff.name }}</span>
+                  <span class="staff-email">{{ staff.email || 'no-email@clinic.local' }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="staff-role">{{ staff.role }}</span>
+            </td>
+            <td>
+              <span class="staff-specialty">{{ staff.specialty || '—' }}</span>
+            </td>
+            <td>
+              <span class="status-pill" [ngClass]="staff.isActive ? 'active' : 'inactive'">
+                {{ staff.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <button class="action-btn"
+                      [ngClass]="staff.isActive ? 'btn-deactivate' : 'btn-activate'"
+                      (click)="toggleStatus(staff)">
+                {{ staff.isActive ? 'Deactivate' : 'Activate' }}
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

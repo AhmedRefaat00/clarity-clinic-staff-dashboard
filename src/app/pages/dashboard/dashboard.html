@@ -1,1 +1,59 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+    <header class="dashboard-header">
+        <h1 class="dashboard-title">Dashboard</h1>
+        <p class="dashboard-subtitle">Clinic performance at a glance.</p>
+    </header>
+
+    <div class="summary-cards">
+        @for (card of summaryCards(); track card.title) {
+        <app-summary-card [title]="card.title" [icon]="card.icon" [value]="card.value" [suffix]="card.suffix">
+        </app-summary-card>
+        }
+    </div>
+
+    <div class="dashboard-details-row">
+        <!-- Appointments by Status Chart Widget -->
+        <div class="details-card chart-card">
+            <h3 class="details-card-title">Appointments by status</h3>
+            <div class="bar-chart-container">
+                <div class="bar-chart">
+                    @for (item of appointmentStatusData(); track item.label) {
+                    <div class="chart-column">
+                        <div class="bar-wrapper">
+                            <span class="bar-value">{{ item.value }}</span>
+                            <div class="bar-pillar" [style.height.%]="(item.value / getMaxAppointmentValue()) * 100">
+                            </div>
+                        </div>
+                        <span class="bar-label">{{ item.label }}</span>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctor Utilization Widget -->
+        <div class="details-card utilization-card">
+            <div class="utilization-header">
+                <h3 class="details-card-title">Doctor utilization</h3>
+                <span class="no-show-rate">No-show rate: 2%</span>
+            </div>
+
+            <div class="utilization-list">
+                @for (doc of doctorUtilizationData(); track doc.name) {
+                <div class="utilization-row">
+                    <div class="doc-avatar">
+                        {{ doc.initials }}
+                    </div>
+                    <span class="doc-name">{{ doc.name }}</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill"
+                            [style.width.%]="getUtilizationPercentage(doc.current, doc.total)">
+                        </div>
+                    </div>
+                    <span class="utilization-ratio">{{ doc.current }}/{{ doc.total }}</span>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

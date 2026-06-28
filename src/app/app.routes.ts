@@ -8,16 +8,18 @@ import { Calendar } from './pages/calendar/calendar';
 import { WalkIn } from './pages/walk-in/walk-in';
 import { Patients } from './pages/patients/patients';
 import { Profile } from './pages/profile/profile';
+import { Login } from './pages/login/login';
+import { authGuard } from './core/guards/auth-guard';
 
 export const routes: Routes = [
-    { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-    { path: 'dashboard', component: Dashboard },
-    { path: 'staff', component: Staff },
-    { path: 'services', component: Services },
-    { path: 'availability', component: Availability },
-    { path: 'reports', component: Reports },
-    { path: 'calendar', component: Calendar },
-    { path: 'walk-in', component: WalkIn },
-    { path: 'patients', component: Patients },
-    { path: 'profile', component: Profile },
+    { path: 'login', component: Login },
+    { path: 'dashboard', component: Dashboard, canActivate: [authGuard] },
+    { path: 'staff', component: Staff, canActivate: [authGuard] },
+    { path: 'services', component: Services, canActivate: [authGuard] },
+    { path: 'availability', component: Availability, canActivate: [authGuard] },
+    { path: 'reports', component: Reports, canActivate: [authGuard] },
+    { path: 'calendar', component: Calendar, canActivate: [authGuard] },
+    { path: 'walk-in', component: WalkIn, canActivate: [authGuard] },
+    { path: 'patients', component: Patients, canActivate: [authGuard] },
+    { path: 'profile', component: Profile, canActivate: [authGuard] },
 ];

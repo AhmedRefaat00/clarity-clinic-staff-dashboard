@@ -1,0 +1,14 @@
+<div class="summary-card-content">
+  <div class="card-header">
+    <div class="icon-container">
+      <img [src]="icon()" alt="icon">
+    </div>
+    <span class="card-title">{{ title() }}</span>
+  </div>
+  <div class="card-body">
+    <span class="card-value">{{ value() }}</span>
+    @if (suffix()) {
+      <span class="card-suffix">{{ suffix() }}</span>
+    }
+  </div>
+</div>
