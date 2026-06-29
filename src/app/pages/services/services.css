@@ -1,0 +1,160 @@
+.services-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.services-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.services-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.services-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.add-service-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  background-color: var(--primary-color);
+  color: var(--text-on-primary);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.add-service-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+/* Responsive Table Container */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.services-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.services-table th {
+  padding: 16px 24px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.75px;
+  background-color: #fafdfc;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dark-theme .services-table th {
+  background-color: #10211e;
+}
+
+.services-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.services-table tr:last-child td {
+  border-bottom: none;
+}
+
+.services-table tr:hover td {
+  background-color: #fafdfc;
+}
+
+.dark-theme .services-table tr:hover td {
+  background-color: #10211e;
+}
+
+.service-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.service-doctor {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-regular);
+}
+
+.service-duration, .service-price {
+  color: var(--text-primary);
+}
+
+/* Action cell icon buttons */
+.actions-cell {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.action-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  border: none;
+  background-color: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.action-icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.action-icon-btn:hover {
+  color: var(--primary-color);
+  background-color: var(--primary-light);
+}
+
+.action-icon-btn.delete-btn:hover {
+  color: var(--color-danger);
+  background-color: var(--bg-danger-light);
+}
+
+/* Responsive adjustment */
+@media (max-width: 768px) {
+  .services-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .add-service-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
