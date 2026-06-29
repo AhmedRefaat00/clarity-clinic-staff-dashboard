@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { SummaryCard } from "./components/summary-card/summary-card";
 import { CommonModule } from '@angular/common';
+import { DashboardService } from '../../core/services/dashboard.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -8,32 +9,42 @@ import { CommonModule } from '@angular/common';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
+  private dashboardService = inject(DashboardService);
+
   summaryCards = signal([
-    { title: "Today's appointments", icon: "images/calendar.svg", value: 8 },
-    { title: "Confirmed", icon: "images/confirmed.svg", value: 7 },
+    { title: "Today's appointments", icon: "images/calendar.svg", value: 0 },
+    { title: "Confirmed", icon: "images/confirmed.svg", value: 0 },
     { title: "Checked in", icon: "images/person.svg", value: 0 },
-    { title: "Today's revenue", icon: "images/sales-amount.svg", value: 370, suffix: "EGP" },
+    { title: "Today's revenue", icon: "images/sales-amount.svg", value: 0, suffix: "EGP" },
   ]);
 
-  appointmentStatusData = signal([
-    { label: 'Checked in', value: 6 },
-    { label: 'Cancelled', value: 5 },
-    { label: 'Completed', value: 5 },
-    { label: 'Confirmed', value: 75 },
-    { label: 'No-show', value: 2 },
-    { label: 'Awaiting payment', value: 2 }
-  ]);
+  appointmentStatusData = signal<any[]>([]);
 
-  doctorUtilizationData = signal([
-    { name: 'zyad', initials: 'Z', current: 1, total: 47 },
-    { name: 'Dr. Ahmed Ali', initials: 'DA', current: 0, total: 18 },
-    { name: 'heldadoc', initials: 'H', current: 4, total: 18 },
-    { name: 'Dr Test', initials: 'DT', current: 0, total: 12 }
-  ]);
+  doctorUtilizationData = signal<any[]>([]);
+
+  ngOnInit(): void {
+    this.dashboardService.getStats().subscribe({
+      next: (stats) => {
+        this.summaryCards.set([
+          { title: "Today's appointments", icon: "images/calendar.svg", value: stats.todayAppointments },
+          { title: "Confirmed", icon: "images/confirmed.svg", value: stats.confirmedCount },
+          { title: "Checked in", icon: "images/person.svg", value: stats.checkedInCount },
+          { title: "Today's revenue", icon: "images/sales-amount.svg", value: stats.todayRevenue, suffix: "EGP" },
+        ]);
+        this.appointmentStatusData.set(stats.statusStats || []);
+        this.doctorUtilizationData.set(stats.doctorUtilization || []);
+      },
+      error: (err) => {
+        console.error('Failed to load dashboard stats:', err);
+      }
+    });
+  }
 
   getMaxAppointmentValue(): number {
-    return Math.max(...this.appointmentStatusData().map(d => d.value), 1);
+    const data = this.appointmentStatusData();
+    if (data.length === 0) return 1;
+    return Math.max(...data.map(d => d.value), 1);
   }
 
   getUtilizationPercentage(current: number, total: number): number {

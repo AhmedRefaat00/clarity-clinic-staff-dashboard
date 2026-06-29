@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -6,21 +6,8 @@ import { StatusBadge } from '../../shared/components/status-badge/status-badge';
 import { PaymentBadge } from '../../shared/components/payment-badge/payment-badge';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
 import { SkeletonRows } from '../../shared/components/skeleton-rows/skeleton-rows';
-
-interface Appointment {
-  id: number;
-  startTime: string;
-  patientName: string;
-  doctorName: string;
-  doctorId: string;
-  serviceName: string;
-  status: string; // Confirmed, Arrived, NoShow, Cancelled, Completed, PendingPayment
-  payment?: {
-    status: string; // Paid, Pending
-    method: string; // Cash, Card
-  };
-  date: string;
-}
+import { AppointmentsService, Appointment } from '../../core/services/appointments.service';
+import { StaffService } from '../../core/services/staff.service';
 
 @Component({
   selector: 'app-calendar',
@@ -30,19 +17,11 @@ interface Appointment {
   styleUrl: './calendar.css'
 })
 export class Calendar implements OnInit {
-  doctors = signal([
-    { id: '1', displayName: 'Dr. Ahmed Ali' },
-    { id: '2', displayName: 'Dr. Sarah Connor' },
-    { id: '3', displayName: 'Dr. John Watson' },
-    { id: '4', displayName: 'Dr. Gregory House' }
-  ]);
+  private appointmentsService = inject(AppointmentsService);
+  private staffService = inject(StaffService);
 
-  appointmentsList = signal<Appointment[]>([
-    { id: 1, startTime: '09:00', patientName: 'Sarah Connor', doctorName: 'Dr. Ahmed Ali', doctorId: '1', serviceName: 'General Consultation', status: 'Confirmed', payment: { status: 'Pending', method: 'Cash' }, date: '2026-06-28' },
-    { id: 2, startTime: '10:00', patientName: 'John Doe', doctorName: 'Dr. Sarah Connor', doctorId: '2', serviceName: 'Dental Cleaning', status: 'Arrived', payment: { status: 'Paid', method: 'Card' }, date: '2026-06-28' },
-    { id: 3, startTime: '11:30', patientName: 'Alice Smith', doctorName: 'Dr. Ahmed Ali', doctorId: '1', serviceName: 'Pediatric Checkup', status: 'PendingPayment', payment: { status: 'Pending', method: 'Cash' }, date: '2026-06-28' },
-    { id: 4, startTime: '14:00', patientName: 'Bob Johnson', doctorName: 'Dr. Gregory House', doctorId: '4', serviceName: 'Cardiology Review', status: 'Completed', payment: { status: 'Paid', method: 'Card' }, date: '2026-06-28' }
-  ]);
+  doctors = signal<any[]>([]);
+  appointmentsList = signal<Appointment[]>([]);
 
   date = signal('');
   doctorId = signal('');
@@ -63,46 +42,90 @@ export class Calendar implements OnInit {
     const dd = String(now.getDate()).padStart(2, '0');
     this.date.set(`${yyyy}-${mm}-${dd}`);
 
-    setTimeout(() => {
-      this.loading.set(false);
-    }, 400);
+    this.loadDoctors();
+  }
+
+  loadDoctors(): void {
+    this.staffService.getStaffList().subscribe({
+      next: (staff: any) => {
+        const docs = (staff || [])
+          .filter((member: any) => member.role?.toLowerCase().includes('doctor'))
+          .map((member: any) => ({
+            id: member.id.toString(),
+            displayName: member.name
+          }));
+        this.doctors.set(docs);
+        this.loadAppointments();
+      },
+      error: (err) => {
+        console.error('Failed to load doctors:', err);
+        this.loadAppointments();
+      }
+    });
+  }
+
+  loadAppointments(): void {
+    this.loading.set(true);
+    this.appointmentsService.getAppointments(this.date(), this.doctorId()).subscribe({
+      next: (appts) => {
+        this.appointmentsList.set(appts || []);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load appointments:', err);
+        this.loading.set(false);
+      }
+    });
   }
 
   filteredAppointments = computed(() => {
+    // Frontend-side filtering as fallback/refinement, but typically handled by params
     const filterDate = this.date();
     const filterDoc = this.doctorId();
 
     return this.appointmentsList().filter(a => {
       const matchDate = a.date === filterDate;
-      const matchDoc = !filterDoc || a.doctorId === filterDoc;
+      const matchDoc = !filterDoc || a.doctorId.toString() === filterDoc;
       return matchDate && matchDoc;
     });
   });
 
   onDateOrDocChange(): void {
-    this.loading.set(true);
-    setTimeout(() => {
-      this.loading.set(false);
-    }, 250);
+    this.loadAppointments();
   }
 
   setArrived(appt: Appointment): void {
-    this.appointmentsList.update(list => list.map(a => 
-      a.id === appt.id ? { ...a, status: 'Arrived' } : a
-    ));
+    this.appointmentsService.markArrived(appt.id).subscribe({
+      next: (updatedAppt) => {
+        this.appointmentsList.update(list => list.map(a => 
+          a.id === appt.id ? { ...a, status: 'Arrived' } : a
+        ));
+      },
+      error: (err) => console.error('Failed to mark arrived:', err)
+    });
   }
 
   setNoShow(appt: Appointment): void {
-    this.appointmentsList.update(list => list.map(a => 
-      a.id === appt.id ? { ...a, status: 'NoShow' } : a
-    ));
+    this.appointmentsService.markNoShow(appt.id).subscribe({
+      next: (updatedAppt) => {
+        this.appointmentsList.update(list => list.map(a => 
+          a.id === appt.id ? { ...a, status: 'NoShow' } : a
+        ));
+      },
+      error: (err) => console.error('Failed to mark no-show:', err)
+    });
   }
 
   cancelAppt(appt: Appointment): void {
     if (confirm('Are you sure you want to cancel this appointment?')) {
-      this.appointmentsList.update(list => list.map(a => 
-        a.id === appt.id ? { ...a, status: 'Cancelled' } : a
-      ));
+      this.appointmentsService.cancelAppointment(appt.id).subscribe({
+        next: () => {
+          this.appointmentsList.update(list => list.map(a => 
+            a.id === appt.id ? { ...a, status: 'Cancelled' } : a
+          ));
+        },
+        error: (err) => console.error('Failed to cancel appointment:', err)
+      });
     }
   }
 
@@ -116,19 +139,30 @@ export class Calendar implements OnInit {
     const appt = this.rescheduling();
     if (!appt || !this.rDate || !this.rTime) return;
 
-    this.appointmentsList.update(list => list.map(a => 
-      a.id === appt.id ? { ...a, date: this.rDate, startTime: this.rTime } : a
-    ));
-    this.rescheduling.set(null);
+    this.appointmentsService.rescheduleAppointment(appt.id, this.rDate, this.rTime).subscribe({
+      next: (updated) => {
+        this.appointmentsList.update(list => list.map(a => 
+          a.id === appt.id ? { ...a, date: this.rDate, startTime: this.rTime } : a
+        ));
+        this.rescheduling.set(null);
+      },
+      error: (err) => console.error('Failed to reschedule appointment:', err)
+    });
   }
 
   confirmCashPaid(): void {
     const appt = this.confirmingCash();
     if (!appt || !appt.payment) return;
 
-    this.appointmentsList.update(list => list.map(a => 
-      a.id === appt.id ? { ...a, payment: { ...a.payment!, status: 'Paid' } } : a
-    ));
-    this.confirmingCash.set(null);
+    this.appointmentsService.confirmCashPaid(appt.id).subscribe({
+      next: (updated) => {
+        this.appointmentsList.update(list => list.map(a => 
+          a.id === appt.id ? { ...a, payment: { ...a.payment!, status: 'Paid' } } : a
+        ));
+        this.confirmingCash.set(null);
+      },
+      error: (err) => console.error('Failed to confirm cash payment:', err)
+    });
   }
 }
+

@@ -1,16 +1,14 @@
-import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmptyState } from '../../shared/components/empty-state/empty-state';
 import { SkeletonRows } from '../../shared/components/skeleton-rows/skeleton-rows';
+import { ServicesService, ClinicService } from '../../core/services/services.service';
+import { StaffService } from '../../core/services/staff.service';
 
-interface Service {
-  id: number;
-  name: string;
-  doctorId: string;
-  doctorName: string;
-  durationMinutes: number;
-  price: number;
+interface DoctorSelect {
+  id: string;
+  displayName: string;
 }
 
 interface ServiceForm {
@@ -29,28 +27,56 @@ interface ServiceForm {
   styleUrl: './services.css'
 })
 export class Services implements OnInit {
-  doctorsList = signal([
-    { id: '1', displayName: 'Dr. Ahmed Ali' },
-    { id: '2', displayName: 'Dr. Sarah Connor' },
-    { id: '3', displayName: 'Dr. John Watson' },
-    { id: '4', displayName: 'Dr. Gregory House' }
-  ]);
+  private servicesService = inject(ServicesService);
+  private staffService = inject(StaffService);
 
-  servicesList = signal<Service[]>([
-    { id: 1, name: 'General Consultation', doctorId: '1', doctorName: 'Dr. Ahmed Ali', durationMinutes: 20, price: 150 },
-    { id: 2, name: 'Dental Cleaning', doctorId: '2', doctorName: 'Dr. Sarah Connor', durationMinutes: 45, price: 300 },
-    { id: 3, name: 'Pediatric Checkup', doctorId: '3', doctorName: 'Dr. John Watson', durationMinutes: 30, price: 200 },
-    { id: 4, name: 'Cardiology Review', doctorId: '4', doctorName: 'Dr. Gregory House', durationMinutes: 60, price: 500 }
-  ]);
+  doctorsList = signal<DoctorSelect[]>([]);
+  servicesList = signal<ClinicService[]>([]);
 
   form = signal<ServiceForm | null>(null);
   loading = signal(true);
   saving = signal(false);
 
   ngOnInit(): void {
-    setTimeout(() => {
-      this.loading.set(false);
-    }, 400);
+    this.loadData();
+  }
+
+  loadData(): void {
+    this.loading.set(true);
+    // Fetch staff list first
+    this.staffService.getStaffList().subscribe({
+      next: (staff: any) => {
+        // Map staff members with role 'doctor' or containing 'doctor' (case-insensitive)
+        const doctors = (staff || [])
+          .filter((member: any) => member.role?.toLowerCase().includes('doctor'))
+          .map((member: any) => ({
+            id: member.id.toString(),
+            displayName: member.name
+          }));
+        this.doctorsList.set(doctors);
+
+        // Then fetch services list
+        this.servicesService.getServicesList().subscribe({
+          next: (services: ClinicService[]) => {
+            // Map doctorName if it is missing from the service payload but present in doctorsList
+            const mappedServices = services.map(s => ({
+              ...s,
+              doctorName: s.doctorName || this.doctorsList().find(d => d.id === s.doctorId.toString())?.displayName || 'Unknown Doctor'
+            }));
+            this.servicesList.set(mappedServices);
+            this.loading.set(false);
+          },
+          error: (err) => {
+            console.error('Failed to load services:', err);
+            this.loading.set(false);
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Failed to load staff/doctors:', err);
+        this.loading.set(false);
+      }
+    });
   }
 
   startAdd(): void {
@@ -64,11 +90,11 @@ export class Services implements OnInit {
     });
   }
 
-  startEdit(service: Service): void {
+  startEdit(service: ClinicService): void {
     this.form.set({
       id: service.id,
       name: service.name,
-      doctorId: service.doctorId,
+      doctorId: service.doctorId.toString(),
       durationMinutes: service.durationMinutes,
       price: service.price
     });
@@ -85,35 +111,61 @@ export class Services implements OnInit {
     this.saving.set(true);
 
     const docName = this.doctorsList().find(d => d.id === data.doctorId)?.displayName || 'Unknown Doctor';
+    const servicePayload = {
+      name: data.name,
+      doctorId: data.doctorId,
+      durationMinutes: data.durationMinutes,
+      price: data.price
+    };
 
-    setTimeout(() => {
-      if (data.id === null) {
-        // Create new service
-        const newService: Service = {
-          id: Date.now(),
-          name: data.name,
-          doctorId: data.doctorId,
-          doctorName: docName,
-          durationMinutes: data.durationMinutes,
-          price: data.price
-        };
-        this.servicesList.update(list => [...list, newService]);
-      } else {
-        // Update existing service
-        this.servicesList.update(list => list.map(s => 
-          s.id === data.id 
-            ? { ...s, name: data.name, doctorId: data.doctorId, doctorName: docName, durationMinutes: data.durationMinutes, price: data.price }
-            : s
-        ));
-      }
-      this.saving.set(false);
-      this.form.set(null);
-    }, 300);
+    if (data.id === null) {
+      // Create new service
+      this.servicesService.addService(servicePayload).subscribe({
+        next: (newService) => {
+          const addedService: ClinicService = {
+            ...newService,
+            doctorName: docName
+          };
+          this.servicesList.update(list => [...list, addedService]);
+          this.saving.set(false);
+          this.form.set(null);
+        },
+        error: (err) => {
+          console.error('Failed to add service:', err);
+          this.saving.set(false);
+        }
+      });
+    } else {
+      // Update existing service
+      this.servicesService.updateService(data.id, servicePayload).subscribe({
+        next: (updatedService) => {
+          this.servicesList.update(list => list.map(s => 
+            s.id === data.id 
+              ? { ...s, ...updatedService, doctorName: docName }
+              : s
+          ));
+          this.saving.set(false);
+          this.form.set(null);
+        },
+        error: (err) => {
+          console.error('Failed to update service:', err);
+          this.saving.set(false);
+        }
+      });
+    }
   }
 
   remove(id: number): void {
     if (confirm('Are you sure you want to delete this service?')) {
-      this.servicesList.update(list => list.filter(s => s.id !== id));
+      this.servicesService.deleteService(id).subscribe({
+        next: () => {
+          this.servicesList.update(list => list.filter(s => s.id !== id));
+        },
+        error: (err) => {
+          console.error('Failed to delete service:', err);
+        }
+      });
     }
   }
 }
+

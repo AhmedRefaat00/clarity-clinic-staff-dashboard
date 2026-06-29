@@ -42,6 +42,33 @@ export class AuthService {
   }
 
   /**
+   * Get current user profile details
+   */
+  getMe(): Observable<any> {
+    const token = this.getToken();
+    const headers = { 'Authorization': `Bearer ${token}` };
+    return this.http.get<any>(`${this.apiUrl}/me`, { headers });
+  }
+
+  /**
+   * Update profile details
+   */
+  updateProfile(profile: { name: string; email: string; phone: string }): Observable<any> {
+    const token = this.getToken();
+    const headers = { 'Authorization': `Bearer ${token}` };
+    return this.http.put<any>(`${this.apiUrl}/profile`, profile, { headers });
+  }
+
+  /**
+   * Change user password
+   */
+  updatePassword(passwordData: { currentPassword: string; newPassword: string }): Observable<any> {
+    const token = this.getToken();
+    const headers = { 'Authorization': `Bearer ${token}` };
+    return this.http.put<any>(`${this.apiUrl}/password`, passwordData, { headers });
+  }
+
+  /**
    * حفظ التوكن في المتصفح
    */
   private setToken(token: string): void {

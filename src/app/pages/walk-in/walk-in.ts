@@ -2,12 +2,10 @@ import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-
-interface Doctor {
-  id: string;
-  name: string;
-  services: { id: number; name: string; durationMinutes: number }[];
-}
+import { AvailabilityService, Doctor } from '../../core/services/availability.service';
+import { AppointmentsService } from '../../core/services/appointments.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment.development';
 
 @Component({
   selector: 'app-walk-in',
@@ -18,6 +16,9 @@ interface Doctor {
 })
 export class WalkIn implements OnInit {
   private router = inject(Router);
+  private availabilityService = inject(AvailabilityService);
+  private appointmentsService = inject(AppointmentsService);
+  private http = inject(HttpClient);
 
   today = '';
   patientMode = signal<'existing' | 'new'>('existing');
@@ -40,33 +41,8 @@ export class WalkIn implements OnInit {
   // Success message state
   showSuccess = signal(false);
 
-  // Mock data
-  doctors = signal<Doctor[]>([
-    {
-      id: '1',
-      name: 'Dr. Ahmed Ali',
-      services: [
-        { id: 1, name: 'General Consultation', durationMinutes: 20 },
-        { id: 3, name: 'Pediatric Checkup', durationMinutes: 30 }
-      ]
-    },
-    {
-      id: '2',
-      name: 'Dr. Sarah Connor',
-      services: [
-        { id: 2, name: 'Dental Cleaning', durationMinutes: 45 }
-      ]
-    },
-    {
-      id: '4',
-      name: 'Dr. Gregory House',
-      services: [
-        { id: 4, name: 'Cardiology Review', durationMinutes: 60 }
-      ]
-    }
-  ]);
-
-  patients = signal([
+  doctors = signal<Doctor[]>([]);
+  patients = signal<any[]>([
     { id: '101', name: 'Sarah Connor', phone: '01012345678' },
     { id: '102', name: 'John Doe', phone: '01122334455' },
     { id: '103', name: 'Alice Smith', phone: '01234567890' },
@@ -75,7 +51,7 @@ export class WalkIn implements OnInit {
 
   // List of services for the selected doctor
   services = computed(() => {
-    const doc = this.doctors().find(d => d.id === this.doctorId());
+    const doc = this.doctors().find(d => d.id.toString() === this.doctorId());
     return doc ? doc.services : [];
   });
 
@@ -89,8 +65,8 @@ export class WalkIn implements OnInit {
   });
 
   // Available times slots
-  availableSlots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '14:00', '14:30', '15:00', '15:30', '16:00'];
-  takenSlots = ['10:00', '11:30', '14:30'];
+  availableSlots: string[] = [];
+  takenSlots: string[] = []; // Used if backend returns all slots with availability status
 
   ngOnInit(): void {
     const now = new Date();
@@ -99,6 +75,30 @@ export class WalkIn implements OnInit {
     const dd = String(now.getDate()).padStart(2, '0');
     this.today = `${yyyy}-${mm}-${dd}`;
     this.bookingDate.set(this.today);
+
+    this.loadDoctors();
+    this.loadPatients();
+  }
+
+  loadDoctors(): void {
+    this.availabilityService.getDoctors().subscribe({
+      next: (docs) => this.doctors.set(docs || []),
+      error: (err) => console.error('Failed to load doctors for walk-in:', err)
+    });
+  }
+
+  loadPatients(): void {
+    const token = localStorage.getItem('staff_token');
+    this.http.get<any[]>(`${environment.apiUrl}api/patients`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).subscribe({
+      next: (data) => {
+        if (data && data.length > 0) {
+          this.patients.set(data);
+        }
+      },
+      error: (err) => console.log('Using fallback mock patients list', err)
+    });
   }
 
   onDoctorChange(): void {
@@ -118,11 +118,18 @@ export class WalkIn implements OnInit {
   }
 
   triggerSlotsLoad(): void {
-    if (this.doctorId() && this.serviceId()) {
+    if (this.doctorId() && this.bookingDate()) {
       this.slotsLoading.set(true);
-      setTimeout(() => {
-        this.slotsLoading.set(false);
-      }, 300);
+      this.availabilityService.getSlots(this.doctorId(), this.bookingDate()).subscribe({
+        next: (slots) => {
+          this.availableSlots = slots || [];
+          this.slotsLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Failed to load slots:', err);
+          this.slotsLoading.set(false);
+        }
+      });
     }
   }
 
@@ -147,15 +154,33 @@ export class WalkIn implements OnInit {
 
     this.booking.set(true);
 
-    setTimeout(() => {
-      this.booking.set(false);
-      this.showSuccess.set(true);
+    const bookingPayload = {
+      patientMode: this.patientMode(),
+      patientId: this.patientMode() === 'existing' ? this.selectedPatientId() : null,
+      npName: this.patientMode() === 'new' ? this.npName : undefined,
+      npPhone: this.patientMode() === 'new' ? this.npPhone : undefined,
+      npEmail: this.patientMode() === 'new' ? this.npEmail : undefined,
+      doctorId: this.doctorId(),
+      serviceId: this.serviceId()!,
+      bookingDate: this.bookingDate(),
+      slot: this.selectedSlot()
+    };
 
-      // Navigate after show success toast
-      setTimeout(() => {
-        this.showSuccess.set(false);
-        this.router.navigate(['/calendar']);
-      }, 1500);
-    }, 800);
+    this.appointmentsService.bookWalkIn(bookingPayload).subscribe({
+      next: () => {
+        this.booking.set(false);
+        this.showSuccess.set(true);
+
+        setTimeout(() => {
+          this.showSuccess.set(false);
+          this.router.navigate(['/calendar']);
+        }, 1500);
+      },
+      error: (err) => {
+        console.error('Failed to book walk-in:', err);
+        this.booking.set(false);
+      }
+    });
   }
 }
+
